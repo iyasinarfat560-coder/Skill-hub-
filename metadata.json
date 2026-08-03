@@ -1,0 +1,6 @@
+{
+  "name": "Skills Hub",
+  "description": "Digital Products & Course Marketplace for Bangladeshi learners (Bengali/English bilingual)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Hind Siliguri', 'Inter', 'Poppins', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+:root {
+  font-family: 'Hind Siliguri', 'Inter', 'Poppins', sans-serif !important;
+}
+
+*, ::before, ::after {
+  font-family: 'Hind Siliguri', 'Inter', 'Poppins', sans-serif !important;
+}
+
+html, body, #root {
+  font-family: 'Hind Siliguri', 'Inter', 'Poppins', sans-serif !important;
+  color: #1e293b;
+  background-color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Form controls & placeholders */
+input, textarea, select, button, table, th, td, label, p, h1, h2, h3, h4, h5, h6, span, div, a {
+  font-family: 'Hind Siliguri', 'Inter', 'Poppins', sans-serif !important;
+}
+
+input::placeholder, textarea::placeholder {
+  font-family: 'Hind Siliguri', 'Inter', 'Poppins', sans-serif !important;
+}
+
+/* SVG Charts & Recharts labels / tooltips */
+svg text, svg tspan, .recharts-text, .recharts-legend-item-text, .recharts-tooltip-wrapper, .recharts-default-tooltip {
+  font-family: 'Hind Siliguri', 'Inter', 'Poppins', sans-serif !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
