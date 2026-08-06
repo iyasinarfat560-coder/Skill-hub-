@@ -74,25 +74,43 @@ export default function App() {
     pinVerified: false,
   });
 
-  // Master State Databases
-  const [products, setProducts] = useState<Course[]>(POPULAR_COURSES);
-  const [bundles, setBundles] = useState<Bundle[]>(INITIAL_BUNDLES);
+  // Local storage persistence helpers for 100% sync between admin & customer views
+  const STORAGE_PREFIX = 'skills_hub_store_';
+  function getStoredData<T>(key: string, fallback: T): T {
+    try {
+      const item = localStorage.getItem(STORAGE_PREFIX + key);
+      return item ? JSON.parse(item) : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  }
+  function storeData<T>(key: string, value: T) {
+    try {
+      localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value));
+    } catch (e) {
+      console.error('Error saving to localStorage', e);
+    }
+  }
+
+  // Master State Databases (loaded from localStorage or fallback to defaults)
+  const [products, setProducts] = useState<Course[]>(() => getStoredData('products', POPULAR_COURSES));
+  const [bundles, setBundles] = useState<Bundle[]>(() => getStoredData('bundles', INITIAL_BUNDLES));
   const [selectedBundle, setSelectedBundle] = useState<Bundle | null>(null);
-  const [categories, setCategories] = useState<Category[]>(CATEGORIES);
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
-  const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
-  const [reviews, setReviews] = useState<AdminReview[]>(INITIAL_REVIEWS);
-  const [coupons, setCoupons] = useState<Coupon[]>(INITIAL_COUPONS);
-  const [withdrawals, setWithdrawals] = useState<WithdrawRequest[]>(INITIAL_WITHDRAWALS);
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(INITIAL_BLOG_POSTS);
-  const [subscribers, setSubscribers] = useState<Subscriber[]>(INITIAL_SUBSCRIBERS);
-  const [announcements, setAnnouncements] = useState<Announcement[]>(INITIAL_ANNOUNCEMENTS);
-  const [staffMembers, setStaffMembers] = useState<StaffMember[]>(INITIAL_STAFF);
-  const [whatsappSettings, setWhatsappSettings] = useState<WhatsAppSettingsData>(INITIAL_WHATSAPP_SETTINGS);
-  const [generalSettings, setGeneralSettings] = useState<GeneralSettings>(INITIAL_GENERAL_SETTINGS);
-  const [paymentSettings, setPaymentSettings] = useState<PaymentSettingsData>(INITIAL_PAYMENT_SETTINGS);
-  const [websiteSettings, setWebsiteSettings] = useState<WebsiteSettingsData>(INITIAL_WEBSITE_SETTINGS);
-  const [auditLogs, setAuditLogs] = useState<SystemAuditLog[]>(INITIAL_AUDIT_LOGS);
+  const [categories, setCategories] = useState<Category[]>(() => getStoredData('categories', CATEGORIES));
+  const [orders, setOrders] = useState<Order[]>(() => getStoredData('orders', INITIAL_ORDERS));
+  const [customers, setCustomers] = useState<Customer[]>(() => getStoredData('customers', INITIAL_CUSTOMERS));
+  const [reviews, setReviews] = useState<AdminReview[]>(() => getStoredData('reviews', INITIAL_REVIEWS));
+  const [coupons, setCoupons] = useState<Coupon[]>(() => getStoredData('coupons', INITIAL_COUPONS));
+  const [withdrawals, setWithdrawals] = useState<WithdrawRequest[]>(() => getStoredData('withdrawals', INITIAL_WITHDRAWALS));
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(() => getStoredData('blogPosts', INITIAL_BLOG_POSTS));
+  const [subscribers, setSubscribers] = useState<Subscriber[]>(() => getStoredData('subscribers', INITIAL_SUBSCRIBERS));
+  const [announcements, setAnnouncements] = useState<Announcement[]>(() => getStoredData('announcements', INITIAL_ANNOUNCEMENTS));
+  const [staffMembers, setStaffMembers] = useState<StaffMember[]>(() => getStoredData('staffMembers', INITIAL_STAFF));
+  const [whatsappSettings, setWhatsappSettings] = useState<WhatsAppSettingsData>(() => getStoredData('whatsappSettings', INITIAL_WHATSAPP_SETTINGS));
+  const [generalSettings, setGeneralSettings] = useState<GeneralSettings>(() => getStoredData('generalSettings', INITIAL_GENERAL_SETTINGS));
+  const [paymentSettings, setPaymentSettings] = useState<PaymentSettingsData>(() => getStoredData('paymentSettings', INITIAL_PAYMENT_SETTINGS));
+  const [websiteSettings, setWebsiteSettings] = useState<WebsiteSettingsData>(() => getStoredData('websiteSettings', INITIAL_WEBSITE_SETTINGS));
+  const [auditLogs, setAuditLogs] = useState<SystemAuditLog[]>(() => getStoredData('auditLogs', INITIAL_AUDIT_LOGS));
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -121,45 +139,89 @@ export default function App() {
             }
           });
           setProducts(mergedProducts);
+          storeData('products', mergedProducts);
           if (updated) {
             saveSupabaseStateKey('products', mergedProducts);
           }
-        } else {
-          setProducts(POPULAR_COURSES);
         }
-        if (dbData.bundles && dbData.bundles.length > 0) setBundles(dbData.bundles);
-        if (dbData.categories && dbData.categories.length > 0) setCategories(dbData.categories);
-        if (dbData.orders && dbData.orders.length > 0) setOrders(dbData.orders);
-        if (dbData.customers && dbData.customers.length > 0) setCustomers(dbData.customers);
-        if (dbData.reviews && dbData.reviews.length > 0) setReviews(dbData.reviews);
-        if (dbData.coupons && dbData.coupons.length > 0) setCoupons(dbData.coupons);
-        if (dbData.blogPosts && dbData.blogPosts.length > 0) setBlogPosts(dbData.blogPosts);
-        if (dbData.subscribers && dbData.subscribers.length > 0) setSubscribers(dbData.subscribers);
-        if (dbData.announcements && dbData.announcements.length > 0) setAnnouncements(dbData.announcements);
-        if (dbData.staffMembers && dbData.staffMembers.length > 0) setStaffMembers(dbData.staffMembers);
-        if (dbData.generalSettings) setGeneralSettings(dbData.generalSettings);
-        if (dbData.paymentSettings) setPaymentSettings(dbData.paymentSettings);
-        if (dbData.websiteSettings) setWebsiteSettings(dbData.websiteSettings);
-        if (dbData.whatsappSettings) setWhatsappSettings(dbData.whatsappSettings);
-        if (dbData.auditLogs && dbData.auditLogs.length > 0) setAuditLogs(dbData.auditLogs);
+        if (dbData.bundles && dbData.bundles.length > 0) {
+          setBundles(dbData.bundles);
+          storeData('bundles', dbData.bundles);
+        }
+        if (dbData.categories && dbData.categories.length > 0) {
+          setCategories(dbData.categories);
+          storeData('categories', dbData.categories);
+        }
+        if (dbData.orders && dbData.orders.length > 0) {
+          setOrders(dbData.orders);
+          storeData('orders', dbData.orders);
+        }
+        if (dbData.customers && dbData.customers.length > 0) {
+          setCustomers(dbData.customers);
+          storeData('customers', dbData.customers);
+        }
+        if (dbData.reviews && dbData.reviews.length > 0) {
+          setReviews(dbData.reviews);
+          storeData('reviews', dbData.reviews);
+        }
+        if (dbData.coupons && dbData.coupons.length > 0) {
+          setCoupons(dbData.coupons);
+          storeData('coupons', dbData.coupons);
+        }
+        if (dbData.blogPosts && dbData.blogPosts.length > 0) {
+          setBlogPosts(dbData.blogPosts);
+          storeData('blogPosts', dbData.blogPosts);
+        }
+        if (dbData.subscribers && dbData.subscribers.length > 0) {
+          setSubscribers(dbData.subscribers);
+          storeData('subscribers', dbData.subscribers);
+        }
+        if (dbData.announcements && dbData.announcements.length > 0) {
+          setAnnouncements(dbData.announcements);
+          storeData('announcements', dbData.announcements);
+        }
+        if (dbData.staffMembers && dbData.staffMembers.length > 0) {
+          setStaffMembers(dbData.staffMembers);
+          storeData('staffMembers', dbData.staffMembers);
+        }
+        if (dbData.generalSettings) {
+          setGeneralSettings(dbData.generalSettings);
+          storeData('generalSettings', dbData.generalSettings);
+        }
+        if (dbData.paymentSettings) {
+          setPaymentSettings(dbData.paymentSettings);
+          storeData('paymentSettings', dbData.paymentSettings);
+        }
+        if (dbData.websiteSettings) {
+          setWebsiteSettings(dbData.websiteSettings);
+          storeData('websiteSettings', dbData.websiteSettings);
+        }
+        if (dbData.whatsappSettings) {
+          setWhatsappSettings(dbData.whatsappSettings);
+          storeData('whatsappSettings', dbData.whatsappSettings);
+        }
+        if (dbData.auditLogs && dbData.auditLogs.length > 0) {
+          setAuditLogs(dbData.auditLogs);
+          storeData('auditLogs', dbData.auditLogs);
+        }
       } else {
         // Initial Seed to Supabase if database empty
         saveFullSupabaseSnapshot({
-          products: POPULAR_COURSES,
-          categories: CATEGORIES,
-          orders: INITIAL_ORDERS,
-          customers: INITIAL_CUSTOMERS,
-          reviews: INITIAL_REVIEWS,
-          coupons: INITIAL_COUPONS,
-          blogPosts: INITIAL_BLOG_POSTS,
-          subscribers: INITIAL_SUBSCRIBERS,
-          announcements: INITIAL_ANNOUNCEMENTS,
-          staffMembers: INITIAL_STAFF,
-          generalSettings: INITIAL_GENERAL_SETTINGS,
-          paymentSettings: INITIAL_PAYMENT_SETTINGS,
-          websiteSettings: INITIAL_WEBSITE_SETTINGS,
-          whatsappSettings: INITIAL_WHATSAPP_SETTINGS,
-          auditLogs: INITIAL_AUDIT_LOGS,
+          products,
+          categories,
+          orders,
+          customers,
+          reviews,
+          coupons,
+          blogPosts,
+          subscribers,
+          announcements,
+          staffMembers,
+          generalSettings,
+          paymentSettings,
+          websiteSettings,
+          whatsappSettings,
+          auditLogs,
         });
       }
     }
@@ -271,6 +333,7 @@ export default function App() {
   const handleAddProduct = (newProd: Course) => {
     setProducts((prev) => {
       const updated = [newProd, ...prev];
+      storeData('products', updated);
       saveSupabaseStateKey('products', updated);
       return updated;
     });
@@ -280,6 +343,7 @@ export default function App() {
   const handleUpdateProduct = (updatedProd: Course) => {
     setProducts((prev) => {
       const updated = prev.map((p) => (p.id === updatedProd.id ? updatedProd : p));
+      storeData('products', updated);
       saveSupabaseStateKey('products', updated);
       return updated;
     });
@@ -289,6 +353,7 @@ export default function App() {
   const handleDeleteProduct = (prodId: string) => {
     setProducts((prev) => {
       const updated = prev.filter((p) => p.id !== prodId);
+      storeData('products', updated);
       saveSupabaseStateKey('products', updated);
       return updated;
     });
@@ -298,6 +363,7 @@ export default function App() {
   const handleAddBundle = (newBundle: Bundle) => {
     setBundles((prev) => {
       const updated = [newBundle, ...prev];
+      storeData('bundles', updated);
       saveSupabaseStateKey('bundles', updated);
       return updated;
     });
@@ -307,6 +373,7 @@ export default function App() {
   const handleUpdateBundle = (updatedBundle: Bundle) => {
     setBundles((prev) => {
       const updated = prev.map((b) => (b.id === updatedBundle.id ? updatedBundle : b));
+      storeData('bundles', updated);
       saveSupabaseStateKey('bundles', updated);
       return updated;
     });
@@ -316,6 +383,7 @@ export default function App() {
   const handleDeleteBundle = (bundleId: string) => {
     setBundles((prev) => {
       const updated = prev.filter((b) => b.id !== bundleId);
+      storeData('bundles', updated);
       saveSupabaseStateKey('bundles', updated);
       return updated;
     });
@@ -325,6 +393,7 @@ export default function App() {
   const handleAddCategory = (cat: Category) => {
     setCategories((prev) => {
       const updated = [...prev, cat];
+      storeData('categories', updated);
       saveSupabaseStateKey('categories', updated);
       return updated;
     });
@@ -334,6 +403,7 @@ export default function App() {
   const handleDeleteCategory = (catId: string) => {
     setCategories((prev) => {
       const updated = prev.filter((c) => c.id !== catId);
+      storeData('categories', updated);
       saveSupabaseStateKey('categories', updated);
       return updated;
     });
@@ -343,6 +413,7 @@ export default function App() {
   const handleUpdateOrderStatus = (orderId: string, status: 'Pending' | 'Processing' | 'Completed' | 'Cancelled') => {
     setOrders((prev) => {
       const updated = prev.map((o) => (o.id === orderId ? { ...o, status } : o));
+      storeData('orders', updated);
       saveSupabaseStateKey('orders', updated);
       return updated;
     });
@@ -356,6 +427,7 @@ export default function App() {
 
     setOrders((prev) => {
       const updatedOrders = [...ordersList, ...prev];
+      storeData('orders', updatedOrders);
       saveSupabaseStateKey('orders', updatedOrders);
       return updatedOrders;
     });
@@ -391,6 +463,7 @@ export default function App() {
         };
         updatedCustomers = [newCustomer, ...prev];
       }
+      storeData('customers', updatedCustomers);
       saveSupabaseStateKey('customers', updatedCustomers);
       return updatedCustomers;
     });
@@ -399,6 +472,7 @@ export default function App() {
       if (o.productId) {
         setProducts((prev) => {
           const updatedProds = prev.map((p) => (p.id === o.productId ? { ...p, enrollmentCount: (p.enrollmentCount || 0) + 1 } : p));
+          storeData('products', updatedProds);
           saveSupabaseStateKey('products', updatedProds);
           return updatedProds;
         });
@@ -408,6 +482,7 @@ export default function App() {
     if (appliedCouponCode) {
       setCoupons((prev) => {
         const updatedCoupons = prev.map((c) => (c.code.toUpperCase() === appliedCouponCode.toUpperCase() ? { ...c, usedCount: c.usedCount + 1 } : c));
+        storeData('coupons', updatedCoupons);
         saveSupabaseStateKey('coupons', updatedCoupons);
         return updatedCoupons;
       });
@@ -423,6 +498,7 @@ export default function App() {
   const handleToggleCustomerStatus = (id: string) => {
     setCustomers((prev) => {
       const updated = prev.map((c) => (c.id === id ? { ...c, status: c.status === 'Active' ? 'Blocked' : 'Active' } : c));
+      storeData('customers', updated);
       saveSupabaseStateKey('customers', updated);
       return updated;
     });
@@ -432,6 +508,7 @@ export default function App() {
   const handleApproveReview = (id: string) => {
     setReviews((prev) => {
       const updated = prev.map((r) => (r.id === id ? { ...r, status: 'Approved' as const } : r));
+      storeData('reviews', updated);
       saveSupabaseStateKey('reviews', updated);
       return updated;
     });
@@ -441,6 +518,7 @@ export default function App() {
   const handleRejectReview = (id: string) => {
     setReviews((prev) => {
       const updated = prev.map((r) => (r.id === id ? { ...r, status: 'Rejected' as const } : r));
+      storeData('reviews', updated);
       saveSupabaseStateKey('reviews', updated);
       return updated;
     });
@@ -450,6 +528,7 @@ export default function App() {
   const handleDeleteReview = (id: string) => {
     setReviews((prev) => {
       const updated = prev.filter((r) => r.id !== id);
+      storeData('reviews', updated);
       saveSupabaseStateKey('reviews', updated);
       return updated;
     });
@@ -459,6 +538,7 @@ export default function App() {
   const handleReplyReview = (id: string, replyText: string) => {
     setReviews((prev) => {
       const updated = prev.map((r) => (r.id === id ? { ...r, adminReply: replyText } : r));
+      storeData('reviews', updated);
       saveSupabaseStateKey('reviews', updated);
       return updated;
     });
@@ -468,6 +548,7 @@ export default function App() {
   const handleAddCoupon = (cpn: Coupon) => {
     setCoupons((prev) => {
       const updated = [cpn, ...prev];
+      storeData('coupons', updated);
       saveSupabaseStateKey('coupons', updated);
       return updated;
     });
@@ -477,6 +558,7 @@ export default function App() {
   const handleUpdateCoupon = (cpn: Coupon) => {
     setCoupons((prev) => {
       const updated = prev.map((c) => (c.id === cpn.id ? cpn : c));
+      storeData('coupons', updated);
       saveSupabaseStateKey('coupons', updated);
       return updated;
     });
@@ -486,6 +568,7 @@ export default function App() {
   const handleDeleteCoupon = (id: string) => {
     setCoupons((prev) => {
       const updated = prev.filter((c) => c.id !== id);
+      storeData('coupons', updated);
       saveSupabaseStateKey('coupons', updated);
       return updated;
     });
@@ -493,18 +576,27 @@ export default function App() {
   };
 
   const handleApproveWithdraw = (id: string) => {
-    setWithdrawals((prev) => prev.map((w) => (w.id === id ? { ...w, status: 'Approved' } : w)));
+    setWithdrawals((prev) => {
+      const updated = prev.map((w) => (w.id === id ? { ...w, status: 'Approved' as const } : w));
+      storeData('withdrawals', updated);
+      return updated;
+    });
     showToast('উইথড্র রিকোয়েস্ট অ্যাপ্রুভ করা হয়েছে');
   };
 
   const handleRejectWithdraw = (id: string) => {
-    setWithdrawals((prev) => prev.map((w) => (w.id === id ? { ...w, status: 'Rejected' } : w)));
+    setWithdrawals((prev) => {
+      const updated = prev.map((w) => (w.id === id ? { ...w, status: 'Rejected' as const } : w));
+      storeData('withdrawals', updated);
+      return updated;
+    });
     showToast('উইথড্র রিকোয়েস্ট রিজেক্ট করা হয়েছে');
   };
 
   const handleAddBlogPost = (b: BlogPost) => {
     setBlogPosts((prev) => {
       const updated = [b, ...prev];
+      storeData('blogPosts', updated);
       saveSupabaseStateKey('blogPosts', updated);
       return updated;
     });
@@ -514,6 +606,7 @@ export default function App() {
   const handleUpdateBlogPost = (updatedPost: BlogPost) => {
     setBlogPosts((prev) => {
       const updated = prev.map((b) => (b.id === updatedPost.id ? updatedPost : b));
+      storeData('blogPosts', updated);
       saveSupabaseStateKey('blogPosts', updated);
       return updated;
     });
@@ -523,6 +616,7 @@ export default function App() {
   const handleDeleteBlogPost = (id: string) => {
     setBlogPosts((prev) => {
       const updated = prev.filter((b) => b.id !== id);
+      storeData('blogPosts', updated);
       saveSupabaseStateKey('blogPosts', updated);
       return updated;
     });
@@ -532,6 +626,7 @@ export default function App() {
   const handleDeleteSubscriber = (id: string) => {
     setSubscribers((prev) => {
       const updated = prev.filter((s) => s.id !== id);
+      storeData('subscribers', updated);
       saveSupabaseStateKey('subscribers', updated);
       return updated;
     });
@@ -541,6 +636,7 @@ export default function App() {
   const handleAddAnnouncement = (a: Announcement) => {
     setAnnouncements((prev) => {
       const updated = [a, ...prev];
+      storeData('announcements', updated);
       saveSupabaseStateKey('announcements', updated);
       return updated;
     });
@@ -550,6 +646,7 @@ export default function App() {
   const handleToggleAnnouncementStatus = (id: string) => {
     setAnnouncements((prev) => {
       const updated = prev.map((a) => (a.id === id ? { ...a, status: a.status === 'Active' ? ('Inactive' as const) : ('Active' as const) } : a));
+      storeData('announcements', updated);
       saveSupabaseStateKey('announcements', updated);
       return updated;
     });
@@ -559,6 +656,7 @@ export default function App() {
   const handleDeleteAnnouncement = (id: string) => {
     setAnnouncements((prev) => {
       const updated = prev.filter((a) => a.id !== id);
+      storeData('announcements', updated);
       saveSupabaseStateKey('announcements', updated);
       return updated;
     });
@@ -568,6 +666,7 @@ export default function App() {
   const handleAddStaffMember = (s: StaffMember) => {
     setStaffMembers((prev) => {
       const updated = [s, ...prev];
+      storeData('staffMembers', updated);
       saveSupabaseStateKey('staffMembers', updated);
       return updated;
     });
@@ -577,6 +676,7 @@ export default function App() {
   const handleDeleteStaffMember = (id: string) => {
     setStaffMembers((prev) => {
       const updated = prev.filter((s) => s.id !== id);
+      storeData('staffMembers', updated);
       saveSupabaseStateKey('staffMembers', updated);
       return updated;
     });
@@ -585,21 +685,25 @@ export default function App() {
 
   const handleSaveWhatsAppSettings = (data: WhatsAppSettingsData) => {
     setWhatsappSettings(data);
+    storeData('whatsappSettings', data);
     saveSupabaseStateKey('whatsappSettings', data);
   };
 
   const handleSaveGeneralSettings = (data: GeneralSettings) => {
     setGeneralSettings(data);
+    storeData('generalSettings', data);
     saveSupabaseStateKey('generalSettings', data);
   };
 
   const handleSavePaymentSettings = (data: PaymentSettingsData) => {
     setPaymentSettings(data);
+    storeData('paymentSettings', data);
     saveSupabaseStateKey('paymentSettings', data);
   };
 
   const handleSaveWebsiteSettings = (data: WebsiteSettingsData) => {
     setWebsiteSettings(data);
+    storeData('websiteSettings', data);
     saveSupabaseStateKey('websiteSettings', data);
   };
 

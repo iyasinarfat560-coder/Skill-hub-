@@ -65,20 +65,20 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       )}
 
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20 gap-4">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs overflow-x-hidden">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 sm:h-20 gap-2 sm:gap-4">
             
             {/* Logo */}
             <div 
               onClick={() => onNavigate('home')}
-              className="flex items-center gap-2.5 cursor-pointer group flex-shrink-0"
+              className="flex items-center gap-2 cursor-pointer group flex-shrink-0 min-w-0"
               id="brand-logo"
             >
-              <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-md shadow-purple-200 group-hover:scale-105 transition-transform">
-                <GraduationCap className="w-6 h-6" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-md shadow-purple-200 group-hover:scale-105 transition-transform flex-shrink-0">
+                <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <span className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">
+              <span className="text-base sm:text-2xl font-extrabold tracking-tight text-slate-900 truncate">
                 {siteTitle.includes(' ') ? (
                   <>
                     {siteTitle.split(' ')[0]} <span className="text-purple-600">{siteTitle.split(' ').slice(1).join(' ')}</span>
@@ -132,11 +132,11 @@ export const Header: React.FC<HeaderProps> = ({
           )}
 
           {/* Right Action Controls */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
             {/* Search Icon button for mobile / general */}
             <button
               onClick={() => onNavigate('courses')}
-              className="p-2 text-slate-600 hover:text-purple-600 rounded-full hover:bg-slate-100 transition-colors md:hidden"
+              className="p-1.5 sm:p-2 text-slate-600 hover:text-purple-600 rounded-full hover:bg-slate-100 transition-colors md:hidden"
               title="Search Courses"
               id="header-search-btn-mobile"
             >
@@ -146,7 +146,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Wishlist Icon */}
             <button
               onClick={onOpenWishlist}
-              className="p-2 text-slate-600 hover:text-purple-600 rounded-full hover:bg-slate-100 transition-colors relative"
+              className="p-1.5 sm:p-2 text-slate-600 hover:text-purple-600 rounded-full hover:bg-slate-100 transition-colors relative"
               title="Wishlist"
               id="header-wishlist-btn"
             >
@@ -161,7 +161,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Cart Icon */}
             <button
               onClick={onOpenCart}
-              className="p-2 text-slate-600 hover:text-purple-600 rounded-full hover:bg-slate-100 transition-colors relative"
+              className="p-1.5 sm:p-2 text-slate-600 hover:text-purple-600 rounded-full hover:bg-slate-100 transition-colors relative"
               title="Cart"
               id="header-cart-btn"
             >
@@ -182,13 +182,13 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="relative">
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-purple-50 border border-purple-200 text-purple-900 font-semibold text-xs sm:text-sm hover:bg-purple-100 transition-colors"
+                  className="flex items-center gap-1.5 pl-1.5 sm:pl-2 pr-2 sm:pr-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-900 font-semibold text-xs sm:text-sm hover:bg-purple-100 transition-colors"
                   id="user-profile-menu"
                 >
-                  <div className="w-7 h-7 rounded-full bg-purple-600 text-white font-bold flex items-center justify-center text-xs">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-purple-600 text-white font-bold flex items-center justify-center text-xs flex-shrink-0">
                     {user.name.charAt(0)}
                   </div>
-                  <span className="max-w-[80px] sm:max-w-[120px] truncate">{user.name}</span>
+                  <span className="max-w-[50px] sm:max-w-[120px] truncate">{user.name}</span>
                 </button>
 
                 {userDropdownOpen && (
@@ -223,7 +223,7 @@ export const Header: React.FC<HeaderProps> = ({
             ) : (
               <button
                 onClick={onOpenLogin}
-                className="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-full shadow-md shadow-purple-200 transition-all hover:scale-105 active:scale-95"
+                className="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs sm:text-sm px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-full shadow-md shadow-purple-200 transition-all hover:scale-105 active:scale-95 flex-shrink-0"
                 id="header-login-btn"
               >
                 লগইন
@@ -233,10 +233,10 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Mobile Hamburger Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-slate-600 hover:text-purple-600 rounded-lg md:hidden"
+              className="p-1.5 sm:p-2 text-slate-600 hover:text-purple-600 rounded-lg md:hidden flex-shrink-0"
               id="mobile-menu-toggle"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
             </button>
           </div>
         </div>

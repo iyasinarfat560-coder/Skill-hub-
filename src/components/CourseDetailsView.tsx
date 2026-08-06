@@ -7,6 +7,7 @@ import {
   Package, Download, CheckCircle, FileText, Zap, MessageCircle
 } from 'lucide-react';
 import { Course, Coupon, WhatsAppSettingsData } from '../types';
+import { AutoProductCover } from './AutoProductCover';
 
 interface CourseDetailsViewProps {
   course: Course;
@@ -128,16 +129,32 @@ export const CourseDetailsView: React.FC<CourseDetailsViewProps> = ({
               /* SIMPLE DIGITAL PRODUCT DETAILED VIEW */
               <div className="space-y-6">
                 
-                {/* Product Cover Image Slider Container (Up to 3 images) */}
+                {/* Product Cover Image Slider Container (Up to 3 images or Auto-generated Cover) */}
                 {(() => {
                   const productImages = [
                     course.thumbnailUrl,
                     ...(course.galleryImages || [])
                   ].filter(Boolean) as string[];
 
-                  const sliderImages = productImages.length > 0 ? productImages : [
-                    'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=800'
-                  ];
+                  const hasRealImages = productImages.length > 0;
+
+                  if (!hasRealImages) {
+                    return (
+                      <div className="bg-white rounded-3xl overflow-hidden shadow-lg border border-slate-200/80 p-3 space-y-3">
+                        <div className="relative w-full h-[320px] sm:h-[400px] md:h-[450px] rounded-2xl overflow-hidden bg-slate-950 group">
+                          <AutoProductCover course={course} className="w-full h-full" />
+                          <div className="absolute top-4 left-4 z-10">
+                            <span className="bg-emerald-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
+                              <Package className="w-3.5 h-3.5" />
+                              <span>ডিজিটাল প্রোডাক্ট (অটো-কভার)</span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  const sliderImages = productImages;
 
                   return (
                     <div className="bg-white rounded-3xl overflow-hidden shadow-lg border border-slate-200/80 p-3 space-y-3">
