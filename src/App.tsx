@@ -123,86 +123,114 @@ export default function App() {
     setToastMessage(msg);
   };
 
-  // Initial Sync from Supabase on mount
+  // Initial Sync from Supabase on mount with smart merging
   useEffect(() => {
     async function initSupabaseData() {
       const dbData = await fetchSupabaseAppState();
       if (dbData) {
-        if (dbData.products && dbData.products.length > 0) {
-          // Merge products so we don't lose the newly added mock ebooks and source code
-          const mergedProducts = [...dbData.products];
-          let updated = false;
-          POPULAR_COURSES.forEach((pc) => {
-            if (!mergedProducts.some((p) => p.id === pc.id)) {
-              mergedProducts.push(pc);
-              updated = true;
-            }
+        const mergeById = <T extends { id: string }>(localArr: T[], remoteArr?: T[]): T[] => {
+          if (!remoteArr) return localArr;
+          const map = new Map<string, T>();
+          // Remote first, then local override so new local/admin additions take precedence
+          remoteArr.forEach(item => map.set(item.id, item));
+          localArr.forEach(item => map.set(item.id, item));
+          return Array.from(map.values());
+        };
+
+        if (dbData.products) {
+          const currentLocal = getStoredData('products', POPULAR_COURSES);
+          const merged = mergeById(currentLocal, dbData.products);
+          POPULAR_COURSES.forEach(pc => {
+            if (!merged.some(p => p.id === pc.id)) merged.push(pc);
           });
-          setProducts(mergedProducts);
-          storeData('products', mergedProducts);
-          if (updated) {
-            saveSupabaseStateKey('products', mergedProducts);
-          }
+          setProducts(merged);
+          storeData('products', merged);
         }
-        if (dbData.bundles && dbData.bundles.length > 0) {
-          setBundles(dbData.bundles);
-          storeData('bundles', dbData.bundles);
+        if (dbData.bundles) {
+          const currentLocal = getStoredData('bundles', INITIAL_BUNDLES);
+          const merged = mergeById(currentLocal, dbData.bundles);
+          setBundles(merged);
+          storeData('bundles', merged);
         }
-        if (dbData.categories && dbData.categories.length > 0) {
-          setCategories(dbData.categories);
-          storeData('categories', dbData.categories);
+        if (dbData.categories) {
+          const currentLocal = getStoredData('categories', CATEGORIES);
+          const merged = mergeById(currentLocal, dbData.categories);
+          setCategories(merged);
+          storeData('categories', merged);
         }
-        if (dbData.orders && dbData.orders.length > 0) {
-          setOrders(dbData.orders);
-          storeData('orders', dbData.orders);
+        if (dbData.orders) {
+          const currentLocal = getStoredData('orders', INITIAL_ORDERS);
+          const merged = mergeById(currentLocal, dbData.orders);
+          setOrders(merged);
+          storeData('orders', merged);
         }
-        if (dbData.customers && dbData.customers.length > 0) {
-          setCustomers(dbData.customers);
-          storeData('customers', dbData.customers);
+        if (dbData.customers) {
+          const currentLocal = getStoredData('customers', INITIAL_CUSTOMERS);
+          const merged = mergeById(currentLocal, dbData.customers);
+          setCustomers(merged);
+          storeData('customers', merged);
         }
-        if (dbData.reviews && dbData.reviews.length > 0) {
-          setReviews(dbData.reviews);
-          storeData('reviews', dbData.reviews);
+        if (dbData.reviews) {
+          const currentLocal = getStoredData('reviews', INITIAL_REVIEWS);
+          const merged = mergeById(currentLocal, dbData.reviews);
+          setReviews(merged);
+          storeData('reviews', merged);
         }
-        if (dbData.coupons && dbData.coupons.length > 0) {
-          setCoupons(dbData.coupons);
-          storeData('coupons', dbData.coupons);
+        if (dbData.coupons) {
+          const currentLocal = getStoredData('coupons', INITIAL_COUPONS);
+          const merged = mergeById(currentLocal, dbData.coupons);
+          setCoupons(merged);
+          storeData('coupons', merged);
         }
-        if (dbData.blogPosts && dbData.blogPosts.length > 0) {
-          setBlogPosts(dbData.blogPosts);
-          storeData('blogPosts', dbData.blogPosts);
+        if (dbData.blogPosts) {
+          const currentLocal = getStoredData('blogPosts', INITIAL_BLOG_POSTS);
+          const merged = mergeById(currentLocal, dbData.blogPosts);
+          setBlogPosts(merged);
+          storeData('blogPosts', merged);
         }
-        if (dbData.subscribers && dbData.subscribers.length > 0) {
-          setSubscribers(dbData.subscribers);
-          storeData('subscribers', dbData.subscribers);
+        if (dbData.subscribers) {
+          const currentLocal = getStoredData('subscribers', INITIAL_SUBSCRIBERS);
+          const merged = mergeById(currentLocal, dbData.subscribers);
+          setSubscribers(merged);
+          storeData('subscribers', merged);
         }
-        if (dbData.announcements && dbData.announcements.length > 0) {
-          setAnnouncements(dbData.announcements);
-          storeData('announcements', dbData.announcements);
+        if (dbData.announcements) {
+          const currentLocal = getStoredData('announcements', INITIAL_ANNOUNCEMENTS);
+          const merged = mergeById(currentLocal, dbData.announcements);
+          setAnnouncements(merged);
+          storeData('announcements', merged);
         }
-        if (dbData.staffMembers && dbData.staffMembers.length > 0) {
-          setStaffMembers(dbData.staffMembers);
-          storeData('staffMembers', dbData.staffMembers);
+        if (dbData.staffMembers) {
+          const currentLocal = getStoredData('staffMembers', INITIAL_STAFF);
+          const merged = mergeById(currentLocal, dbData.staffMembers);
+          setStaffMembers(merged);
+          storeData('staffMembers', merged);
         }
         if (dbData.generalSettings) {
-          setGeneralSettings(dbData.generalSettings);
-          storeData('generalSettings', dbData.generalSettings);
+          const merged = { ...INITIAL_GENERAL_SETTINGS, ...dbData.generalSettings };
+          setGeneralSettings(merged);
+          storeData('generalSettings', merged);
         }
         if (dbData.paymentSettings) {
-          setPaymentSettings(dbData.paymentSettings);
-          storeData('paymentSettings', dbData.paymentSettings);
+          const merged = { ...INITIAL_PAYMENT_SETTINGS, ...dbData.paymentSettings };
+          setPaymentSettings(merged);
+          storeData('paymentSettings', merged);
         }
         if (dbData.websiteSettings) {
-          setWebsiteSettings(dbData.websiteSettings);
-          storeData('websiteSettings', dbData.websiteSettings);
+          const merged = { ...INITIAL_WEBSITE_SETTINGS, ...dbData.websiteSettings };
+          setWebsiteSettings(merged);
+          storeData('websiteSettings', merged);
         }
         if (dbData.whatsappSettings) {
-          setWhatsappSettings(dbData.whatsappSettings);
-          storeData('whatsappSettings', dbData.whatsappSettings);
+          const merged = { ...INITIAL_WHATSAPP_SETTINGS, ...dbData.whatsappSettings };
+          setWhatsappSettings(merged);
+          storeData('whatsappSettings', merged);
         }
-        if (dbData.auditLogs && dbData.auditLogs.length > 0) {
-          setAuditLogs(dbData.auditLogs);
-          storeData('auditLogs', dbData.auditLogs);
+        if (dbData.auditLogs) {
+          const currentLocal = getStoredData('auditLogs', INITIAL_AUDIT_LOGS);
+          const merged = mergeById(currentLocal, dbData.auditLogs);
+          setAuditLogs(merged);
+          storeData('auditLogs', merged);
         }
       } else {
         // Initial Seed to Supabase if database empty
