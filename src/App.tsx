@@ -25,6 +25,7 @@ import {
   saveSupabaseOrder,
   saveSupabaseSubscriber,
   saveFullSupabaseSnapshot,
+  supabase,
 } from './lib/supabase';
 
 import { Header } from './components/Header';
@@ -254,6 +255,90 @@ export default function App() {
       }
     }
     initSupabaseData();
+  }, []);
+
+  // Supabase Realtime Subscription for instant cross-tab/admin-customer sync
+  useEffect(() => {
+    const channel = supabase
+      .channel('skills_hub_realtime_sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'skills_hub_state' },
+        async () => {
+          const dbData = await fetchSupabaseAppState();
+          if (dbData) {
+            if (dbData.products) {
+              setProducts(dbData.products);
+              storeData('products', dbData.products);
+            }
+            if (dbData.bundles) {
+              setBundles(dbData.bundles);
+              storeData('bundles', dbData.bundles);
+            }
+            if (dbData.categories) {
+              setCategories(dbData.categories);
+              storeData('categories', dbData.categories);
+            }
+            if (dbData.orders) {
+              setOrders(dbData.orders);
+              storeData('orders', dbData.orders);
+            }
+            if (dbData.customers) {
+              setCustomers(dbData.customers);
+              storeData('customers', dbData.customers);
+            }
+            if (dbData.reviews) {
+              setReviews(dbData.reviews);
+              storeData('reviews', dbData.reviews);
+            }
+            if (dbData.coupons) {
+              setCoupons(dbData.coupons);
+              storeData('coupons', dbData.coupons);
+            }
+            if (dbData.blogPosts) {
+              setBlogPosts(dbData.blogPosts);
+              storeData('blogPosts', dbData.blogPosts);
+            }
+            if (dbData.subscribers) {
+              setSubscribers(dbData.subscribers);
+              storeData('subscribers', dbData.subscribers);
+            }
+            if (dbData.announcements) {
+              setAnnouncements(dbData.announcements);
+              storeData('announcements', dbData.announcements);
+            }
+            if (dbData.staffMembers) {
+              setStaffMembers(dbData.staffMembers);
+              storeData('staffMembers', dbData.staffMembers);
+            }
+            if (dbData.generalSettings) {
+              setGeneralSettings(dbData.generalSettings);
+              storeData('generalSettings', dbData.generalSettings);
+            }
+            if (dbData.paymentSettings) {
+              setPaymentSettings(dbData.paymentSettings);
+              storeData('paymentSettings', dbData.paymentSettings);
+            }
+            if (dbData.websiteSettings) {
+              setWebsiteSettings(dbData.websiteSettings);
+              storeData('websiteSettings', dbData.websiteSettings);
+            }
+            if (dbData.whatsappSettings) {
+              setWhatsappSettings(dbData.whatsappSettings);
+              storeData('whatsappSettings', dbData.whatsappSettings);
+            }
+            if (dbData.auditLogs) {
+              setAuditLogs(dbData.auditLogs);
+              storeData('auditLogs', dbData.auditLogs);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Global keyboard & hash listener for hidden admin login modal
@@ -1219,6 +1304,26 @@ export default function App() {
         onClose={() => setIsLoginOpen(false)}
         onLoginSuccess={(u) => {
           setUser(u);
+          setCustomers((prev) => {
+            const exists = prev.some((c) => c.email.toLowerCase() === u.email.toLowerCase());
+            if (!exists) {
+              const newCust: Customer = {
+                id: `CUST-${Math.floor(1000 + Math.random() * 9000)}`,
+                name: u.name,
+                email: u.email,
+                phone: '',
+                totalOrders: 0,
+                totalSpent: 0,
+                status: 'Active',
+                joinedDate: new Date().toISOString().substring(0, 10),
+              };
+              const updated = [newCust, ...prev];
+              storeData('customers', updated);
+              saveSupabaseStateKey('customers', updated);
+              return updated;
+            }
+            return prev;
+          });
           showToast(`স্বাগতম, ${u.name}!`);
         }}
       />
