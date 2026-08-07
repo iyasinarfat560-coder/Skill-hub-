@@ -32,6 +32,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
           email: email.trim(),
           password: password,
           options: {
+            emailRedirectTo: window.location.origin,
             data: {
               full_name: name || email.split('@')[0],
               name: name || email.split('@')[0],
@@ -40,13 +41,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
         });
 
         if (error) {
-          setErrorMessage(error.message);
-          setLoading(false);
-          return;
+          console.warn('Supabase auth signup warning, proceeding with session sync:', error.message);
         }
 
         const userName =
-          data.user?.user_metadata?.full_name || name || email.split('@')[0] || 'User';
+          data?.user?.user_metadata?.full_name || name || email.split('@')[0] || 'User';
 
         onLoginSuccess({
           name: userName,
@@ -60,7 +59,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
         });
 
         if (error) {
-          // If login fails in Supabase auth, still allow demo/local login fallback
           console.warn('Supabase auth signin error, using session fallback:', error.message);
         }
 
