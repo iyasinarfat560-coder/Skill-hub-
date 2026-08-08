@@ -1,14 +1,16 @@
 import React, { useState, useRef } from 'react';
 import { Lock, Mail, Phone, Eye, EyeOff, ShieldCheck, AlertTriangle, CheckCircle2, X, Sparkles, KeyRound } from 'lucide-react';
 import { ADMIN_SEED_CREDENTIALS } from '../../data/adminMockData';
+import { StaffMember } from '../../types';
 
 interface AdminAuthModalProps {
   isOpen: boolean;
+  staffMembers?: StaffMember[];
   onClose: () => void;
-  onSuccessLogin: () => void;
+  onSuccessLogin: (adminData: { name: string; email: string; role: string }) => void;
 }
 
-export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ isOpen, onClose, onSuccessLogin }) => {
+export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ isOpen, staffMembers = [], onClose, onSuccessLogin }) => {
   const [step, setStep] = useState<1 | 2>(1); // 1 = Login Info, 2 = Security PIN
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -18,6 +20,9 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ isOpen, onClose,
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [resetSuccessMsg, setResetSuccessMsg] = useState<string | null>(null);
+
+  // Authenticated user holding state between step 1 and step 2
+  const [authenticatedStaff, setAuthenticatedStaff] = useState<{ name: string; email: string; role: string } | null>(null);
 
   // Step 2 PIN state
   const [pinDigits, setPinDigits] = useState(['', '', '', '']);
@@ -31,25 +36,28 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ isOpen, onClose,
 
   if (!isOpen) return null;
 
-  // Step 1: Validate Email + Phone + Password
+  // Step 1: Validate Email + Password against Super Admin ONLY
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
 
     const cleanEmail = email.trim().toLowerCase();
-    const cleanPhone = phone.trim();
     const cleanPass = password;
 
-    const isEmailValid = cleanEmail === ADMIN_SEED_CREDENTIALS.email.toLowerCase();
-    const isPhoneValid = cleanPhone === ADMIN_SEED_CREDENTIALS.phone;
-    const isPasswordValid = cleanPass === ADMIN_SEED_CREDENTIALS.password;
+    const isSuperAdminEmail = cleanEmail === ADMIN_SEED_CREDENTIALS.email.toLowerCase();
+    const isSuperAdminPass = cleanPass === ADMIN_SEED_CREDENTIALS.password;
 
-    if (isEmailValid && isPhoneValid && isPasswordValid) {
+    if (isSuperAdminEmail && isSuperAdminPass) {
+      setAuthenticatedStaff({
+        name: ADMIN_SEED_CREDENTIALS.name,
+        email: ADMIN_SEED_CREDENTIALS.email,
+        role: ADMIN_SEED_CREDENTIALS.role,
+      });
       setStep(2);
       setErrorMsg(null);
       setTimeout(() => pinInputRefs[0].current?.focus(), 150);
     } else {
-      setErrorMsg('ইমেইল, ফোন নম্বর অথবা পাসওয়ার্ড ভুল হয়েছে! অনুগ্রহ করে সঠিক তথ্য প্রদান করুন।');
+      setErrorMsg('ইমেইল অথবা পাসওয়ার্ড ভুল হয়েছে! শুধুমাত্র নির্দিষ্ট অনুমোদিত এডমিন (Admin1829@gmail.com) প্রবেশ করতে পারবেন।');
     }
   };
 
@@ -77,10 +85,18 @@ export const AdminAuthModal: React.FC<AdminAuthModalProps> = ({ isOpen, onClose,
 
     const enteredPin = pinDigits.join('');
     if (enteredPin === ADMIN_SEED_CREDENTIALS.pin) {
-      onSuccessLogin();
+      if (authenticatedStaff) {
+        onSuccessLogin(authenticatedStaff);
+      } else {
+        onSuccessLogin({
+          name: ADMIN_SEED_CREDENTIALS.name,
+          email: ADMIN_SEED_CREDENTIALS.email,
+          role: ADMIN_SEED_CREDENTIALS.role,
+        });
+      }
       onClose();
     } else {
-      setErrorMsg('নিরাপত্তা পিন নম্বর সঠিক নয়! সঠিক ৪-ডিজিটের পিন কোড প্রদান করুন।');
+      setErrorMsg('নিরাপত্তা পিন নম্বর সঠিক নয়! সঠিক ৪-ডিজিটের পিন কোড (1829) প্রদান করুন।');
       setPinDigits(['', '', '', '']);
       pinInputRefs[0].current?.focus();
     }

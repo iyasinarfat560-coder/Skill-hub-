@@ -23,13 +23,14 @@ import {
 import { Order, Course, ViewMode } from '../types';
 
 interface CustomerProfileViewProps {
-  user: { name: string; email: string } | null;
+  user: { name: string; email: string; avatar?: string } | null;
   orders: Order[];
   products: Course[];
   onNavigate: (view: ViewMode) => void;
   onShowToast: (msg: string) => void;
   onOpenLogin: () => void;
   onSelectCourseForDetails?: (course: Course) => void;
+  onUpdateUser?: (updated: { name: string; email: string; avatar?: string }) => void;
 }
 
 export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
@@ -40,11 +41,16 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
   onShowToast,
   onOpenLogin,
   onSelectCourseForDetails,
+  onUpdateUser,
 }) => {
   const [activeTab, setActiveTab] = useState<'orders' | 'profile'>('orders');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Pending' | 'Processing' | 'Completed' | 'Cancelled'>('All');
   
+  // Profile edit state
+  const [editName, setEditName] = useState(user?.name || '');
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
+
   // Selected Order for Modal Detail & Timeline
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isTrackingRefreshing, setIsTrackingRefreshing] = useState(false);
@@ -348,26 +354,89 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
           <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-2xs max-w-2xl mx-auto space-y-6">
             <h2 className="text-xl font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
               <User className="w-5 h-5 text-purple-600" />
-              ব্যক্তিগত তথ্য
+              ব্যক্তিগত তথ্য ও প্রোফাইল ছবি
             </h2>
 
-            <div className="space-y-4">
+            {/* Profile Picture Section */}
+            <div className="flex flex-col sm:flex-row items-center gap-6 p-4 bg-purple-50/50 rounded-2xl border border-purple-100">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full bg-purple-600 text-white font-black text-2xl flex items-center justify-center overflow-hidden shadow-md border-2 border-white">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={editName || user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    (editName || user.name).charAt(0)
+                  )}
+                </div>
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <h3 className="font-extrabold text-slate-900 text-base">{user.name}</h3>
+                <p className="text-xs text-slate-500 mb-3">{user.email}</p>
+                <label className="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-sm cursor-pointer inline-flex items-center gap-2">
+                  <span>প্রোফাইল ছবি আপলোড করুন</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          const res = reader.result as string;
+                          setAvatarUrl(res);
+                          if (onUpdateUser) {
+                            onUpdateUser({
+                              name: editName,
+                              email: user.email,
+                              avatar: res,
+                            });
+                            onShowToast('প্রোফাইল ছবি সফলভাবে আপডেট করা হয়েছে!');
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (onUpdateUser) {
+                  onUpdateUser({
+                    name: editName,
+                    email: user.email,
+                    avatar: avatarUrl,
+                  });
+                  onShowToast('প্রোফাইল তথ্য সফলভাবে আপডেট করা হয়েছে!');
+                }
+              }}
+              className="space-y-4"
+            >
               <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                  পূর্ণ নাম
+                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">
+                  পূর্ণ নাম পরিবর্তন করুন
                 </label>
                 <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-900 font-bold text-sm">
                   <User className="w-4 h-4 text-purple-600 shrink-0" />
-                  <span>{user.name}</span>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full bg-transparent border-none outline-none font-bold text-slate-900"
+                    placeholder="আপনার পূর্ণ নাম লিখুন"
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                  ইমেইল এড্রেস
+                  ইমেইল এড্রেস (পরিবর্তনযোগ্য নয়)
                 </label>
-                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-900 font-bold text-sm">
-                  <Mail className="w-4 h-4 text-purple-600 shrink-0" />
+                <div className="flex items-center gap-3 p-3 bg-slate-100 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm">
+                  <Mail className="w-4 h-4 text-slate-400 shrink-0" />
                   <span>{user.email}</span>
                 </div>
               </div>
@@ -381,7 +450,16 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
                   <span>সক্রিয় (Active) কাস্টমার প্রোফাইল</span>
                 </div>
               </div>
-            </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  className="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-md shadow-purple-200 cursor-pointer"
+                >
+                  প্রোফাইল তথ্য সংরক্ষণ করুন
+                </button>
+              </div>
+            </form>
           </div>
         )}
       </div>

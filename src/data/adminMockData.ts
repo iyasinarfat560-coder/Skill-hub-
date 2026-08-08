@@ -46,12 +46,12 @@ export const INITIAL_BUNDLES: Bundle[] = [
 ];
 
 export const ADMIN_SEED_CREDENTIALS = {
-  email: 'iyasinarfat560@gmail.com',
+  email: 'Admin1829@gmail.com',
   phone: '01861612289',
   password: '12342580',
   pin: '1829',
   role: 'Super Admin',
-  name: 'Yasin Arfat (Admin)',
+  name: 'Admin',
 };
 
 export const INITIAL_ORDERS: Order[] = [

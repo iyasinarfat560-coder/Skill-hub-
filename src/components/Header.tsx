@@ -11,7 +11,7 @@ interface HeaderProps {
   onOpenWishlist: () => void;
   onOpenLogin: () => void;
   onOpenAdminAuth: () => void;
-  user: { name: string; email: string } | null;
+  user: { name: string; email: string; avatar?: string } | null;
   onLogout: () => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
@@ -182,18 +182,22 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="relative">
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-1.5 pl-1.5 sm:pl-2 pr-2 sm:pr-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-900 font-semibold text-xs sm:text-sm hover:bg-purple-100 transition-colors"
+                  className="flex items-center gap-1.5 pl-1.5 sm:pl-2 pr-2 sm:pr-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-900 font-semibold text-xs sm:text-sm hover:bg-purple-100 transition-colors cursor-pointer"
                   id="user-profile-menu"
                 >
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-purple-600 text-white font-bold flex items-center justify-center text-xs flex-shrink-0">
-                    {user.name.charAt(0)}
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-purple-600 text-white font-bold flex items-center justify-center text-xs flex-shrink-0 overflow-hidden">
+                    {user.avatar ? (
+                      <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                    ) : (
+                      user.name.charAt(0)
+                    )}
                   </div>
                   <span className="max-w-[50px] sm:max-w-[120px] truncate">{user.name}</span>
                 </button>
 
                 {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1.5 z-50">
-                    <div className="px-4 py-2 border-b border-slate-100">
+                  <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50">
+                    <div className="px-4 py-2.5 border-b border-slate-100">
                       <p className="text-xs font-bold text-slate-900 truncate">{user.name}</p>
                       <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
                     </div>
@@ -202,17 +206,27 @@ export const Header: React.FC<HeaderProps> = ({
                         onNavigate('profile');
                         setUserDropdownOpen(false);
                       }}
-                      className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-purple-700 flex items-center gap-2"
+                      className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-purple-700 flex items-center gap-2 transition-colors cursor-pointer"
                     >
                       <ShoppingBag className="w-3.5 h-3.5 text-purple-600" />
                       আমার অর্ডারসমূহ
                     </button>
                     <button
                       onClick={() => {
+                        onNavigate('profile');
+                        setUserDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-purple-700 flex items-center gap-2 transition-colors cursor-pointer"
+                    >
+                      <User className="w-3.5 h-3.5 text-purple-600" />
+                      প্রোফাইল ও ছবি পরিবর্তন
+                    </button>
+                    <button
+                      onClick={() => {
                         onLogout();
                         setUserDropdownOpen(false);
                       }}
-                      className="w-full text-left px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2"
+                      className="w-full text-left px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors border-t border-slate-100 mt-1 pt-2 cursor-pointer"
                     >
                       <LogOut className="w-3.5 h-3.5" />
                       লগআউট

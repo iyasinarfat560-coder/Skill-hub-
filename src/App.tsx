@@ -1080,6 +1080,9 @@ export default function App() {
               setCurrentView('course-details');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
+            onUpdateUser={(updated) => {
+              setUser(updated);
+            }}
           />
         )}
 
@@ -1331,12 +1334,20 @@ export default function App() {
       {/* 2-Step Admin Auth Modal */}
       <AdminAuthModal
         isOpen={isAdminAuthModalOpen}
+        staffMembers={staffMembers}
         onClose={() => setIsAdminAuthModalOpen(false)}
-        onSuccessLogin={() => {
+        onSuccessLogin={(adminInfo) => {
           setIsAdminLoggedIn(true);
-          setAdminUser((prev) => ({ ...prev, isLoggedIn: true, pinVerified: true }));
+          setAdminUser((prev) => ({
+            ...prev,
+            isLoggedIn: true,
+            pinVerified: true,
+            name: adminInfo.name,
+            email: adminInfo.email,
+            role: adminInfo.role as any,
+          }));
           setCurrentView('admin');
-          showToast('অ্যাডমিন কন্ট্রোল প্যানেলে স্বাগতম!');
+          showToast(`স্বাগতম, ${adminInfo.name} (${adminInfo.role})!`);
         }}
       />
 
