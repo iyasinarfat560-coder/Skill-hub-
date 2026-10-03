@@ -452,26 +452,40 @@ export default function App() {
   }, [cartItems]);
 
   // Handlers for Admin Mutations
-  const handleAddProduct = (newProd: Course) => {
+  const handleAddProduct = async (newProd: Course) => {
+    let currentUpdated: Course[] = [];
     setProducts((prev) => {
-      const updated = [newProd, ...prev];
-      storeData('products', updated);
-      saveSupabaseStateKey('products', updated);
-      saveSupabaseProduct(newProd);
-      return updated;
+      currentUpdated = [newProd, ...prev];
+      storeData('products', currentUpdated);
+      return currentUpdated;
     });
-    showToast('নতুন প্রোডাক্ট সফলভাবে যুক্ত করা হয়েছে!');
+
+    const stateSuccess = await saveSupabaseStateKey('products', currentUpdated);
+    const prodSuccess = await saveSupabaseProduct(newProd);
+
+    if (stateSuccess || prodSuccess) {
+      showToast('নতুন প্রোডাক্ট সফলভাবে Supabase-এ পাবলিশ করা হয়েছে!');
+    } else {
+      showToast('লোকাল সেভ হয়েছে, কিন্তু Supabase-এ পাবলিশ হয়নি। RLS বা টেবিল চেক করুন।');
+    }
   };
 
-  const handleUpdateProduct = (updatedProd: Course) => {
+  const handleUpdateProduct = async (updatedProd: Course) => {
+    let currentUpdated: Course[] = [];
     setProducts((prev) => {
-      const updated = prev.map((p) => (p.id === updatedProd.id ? updatedProd : p));
-      storeData('products', updated);
-      saveSupabaseStateKey('products', updated);
-      saveSupabaseProduct(updatedProd);
-      return updated;
+      currentUpdated = prev.map((p) => (p.id === updatedProd.id ? updatedProd : p));
+      storeData('products', currentUpdated);
+      return currentUpdated;
     });
-    showToast('প্রোডাক্ট ডিটেইলস আপডেট করা হয়েছে!');
+
+    const stateSuccess = await saveSupabaseStateKey('products', currentUpdated);
+    const prodSuccess = await saveSupabaseProduct(updatedProd);
+
+    if (stateSuccess || prodSuccess) {
+      showToast('প্রোডাক্ট Supabase-এ আপডেট ও পাবলিশ করা হয়েছে!');
+    } else {
+      showToast('লোকাল আপডেট হয়েছে, কিন্তু Supabase-এ পাবলিশ হয়নি।');
+    }
   };
 
   const handleDeleteProduct = (prodId: string) => {

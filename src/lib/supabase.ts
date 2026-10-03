@@ -170,9 +170,9 @@ export async function saveSupabaseSubscriber(subscriber: Subscriber): Promise<vo
 /**
  * Insert or update individual product/course into Supabase products table
  */
-export async function saveSupabaseProduct(product: Course): Promise<void> {
+export async function saveSupabaseProduct(product: Course): Promise<boolean> {
   try {
-    await supabase.from('products').upsert({
+    const { error } = await supabase.from('products').upsert({
       id: product.id,
       title: product.title,
       category: product.category,
@@ -184,8 +184,15 @@ export async function saveSupabaseProduct(product: Course): Promise<void> {
       description: product.description || '',
       raw_data: product,
     }, { onConflict: 'id' });
+
+    if (error) {
+      console.warn('Failed to upsert product into Supabase products table:', error.message);
+      return false;
+    }
+    return true;
   } catch (e) {
-    console.log('Saved product to state snapshot fallback');
+    console.error('Error saving product to Supabase:', e);
+    return false;
   }
 }
 
