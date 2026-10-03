@@ -653,8 +653,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = (props) => {
           {activeTab === 'backup-tools' && (
             <BackupToolsView
               logs={props.auditLogs}
+              products={props.products}
               onDownloadBackup={handleDownloadBackup}
               onClearCache={handleClearCache}
+              onShowToast={props.onShowToast}
             />
           )}
         </main>
