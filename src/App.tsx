@@ -873,6 +873,7 @@ export default function App() {
           paymentSettings={paymentSettings}
           websiteSettings={websiteSettings}
           auditLogs={auditLogs}
+          onShowToast={showToast}
           onAddProduct={handleAddProduct}
           onUpdateProduct={handleUpdateProduct}
           onDeleteProduct={handleDeleteProduct}

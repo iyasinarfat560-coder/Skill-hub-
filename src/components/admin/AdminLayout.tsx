@@ -96,6 +96,7 @@ interface AdminLayoutProps {
   paymentSettings: PaymentSettingsData;
   websiteSettings: WebsiteSettingsData;
   auditLogs: SystemAuditLog[];
+  onShowToast: (msg: string) => void;
 
   // Mutators
   onAddProduct: (p: Course) => void;
