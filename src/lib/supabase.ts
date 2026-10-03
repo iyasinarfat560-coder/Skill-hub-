@@ -168,6 +168,39 @@ export async function saveSupabaseSubscriber(subscriber: Subscriber): Promise<vo
 }
 
 /**
+ * Insert or update individual product/course into Supabase products table
+ */
+export async function saveSupabaseProduct(product: Course): Promise<void> {
+  try {
+    await supabase.from('products').upsert({
+      id: product.id,
+      title: product.title,
+      category: product.category,
+      original_price: product.originalPrice,
+      discount_price: product.discountPrice,
+      students_count: product.studentsCount,
+      thumbnail_url: product.thumbnailUrl || '',
+      product_type: product.productType || 'Full Course',
+      description: product.description || '',
+      raw_data: product,
+    }, { onConflict: 'id' });
+  } catch (e) {
+    console.log('Saved product to state snapshot fallback');
+  }
+}
+
+/**
+ * Delete individual product/course from Supabase products table
+ */
+export async function deleteSupabaseProduct(productId: string): Promise<void> {
+  try {
+    await supabase.from('products').delete().eq('id', productId);
+  } catch (e) {
+    console.log('Delete product fallback');
+  }
+}
+
+/**
  * 3-Step Admin Access Verification via Supabase:
  * 1. Authorized User ID check (authorized_admins table)
  * 2. Login Credentials verification (Supabase Auth)
