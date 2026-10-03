@@ -166,3 +166,115 @@ export async function saveSupabaseSubscriber(subscriber: Subscriber): Promise<vo
     console.log('Saved to state snapshot fallback');
   }
 }
+
+/**
+ * 3-Step Admin Access Verification via Supabase:
+ * 1. Authorized User ID check (authorized_admins table)
+ * 2. Login Credentials verification (Supabase Auth)
+ * 3. Approved Device check (approved_devices table)
+ */
+export async function verifySupabaseAdminAccess(
+  email: string,
+  pass: string,
+  deviceId: string
+): Promise<{ success: boolean; error?: string; role?: string }> {
+  try {
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Step 1: Check if User ID is Authorized in authorized_admins table
+    const { data: adminRecord, error: adminError } = await supabase
+      .from('authorized_admins')
+      .select('email, role, is_active')
+      .eq('email', cleanEmail)
+      .eq('is_active', true)
+      .single();
+
+    if (adminError || !adminRecord) {
+      return { success: false, error: 'ADMIN ACCESS DENIED: Unauthorized User ID (Not registered in authorized_admins table).' };
+    }
+
+    // Step 2: Verify Login Credential via Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: cleanEmail,
+      password: pass,
+    });
+
+    if (authError || !authData.session) {
+      return { success: false, error: 'ADMIN ACCESS DENIED: Incorrect Login Credentials (Supabase Auth verification failed).' };
+    }
+
+    // Step 3: Verify Approved Device in approved_devices table
+    const { data: deviceRecord, error: deviceError } = await supabase
+      .from('approved_devices')
+      .select('*')
+      .eq('admin_email', cleanEmail)
+      .eq('device_id', deviceId)
+      .eq('is_approved', true)
+      .single();
+
+    if (deviceError || !deviceRecord) {
+      await supabase.auth.signOut();
+      return { success: false, error: 'ADMIN ACCESS DENIED: Unknown or Unapproved Device (Device ID not registered in approved_devices table).' };
+    }
+
+    return { success: true, role: adminRecord.role };
+  } catch (err: any) {
+    await supabase.auth.signOut();
+    return { success: false, error: 'ADMIN ACCESS DENIED: ' + (err.message || 'System error') };
+  }
+}
+
+/**
+ * Register or approve a device for an admin
+ */
+export async function registerApprovedDevice(
+  email: string,
+  deviceId: string,
+  deviceName: string
+): Promise<boolean> {
+  try {
+    const { error } = await supabase.from('approved_devices').upsert({
+      admin_email: email.trim().toLowerCase(),
+      device_id: deviceId,
+      device_name: deviceName,
+      is_approved: true,
+      last_login: new Date().toISOString(),
+    }, { onConflict: 'admin_email,device_id' });
+
+    return !error;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Save or update customer profile in Supabase profiles table
+ */
+export async function saveSupabaseProfile(user: {
+  id?: string;
+  name: string;
+  email: string;
+  avatar?: string;
+}): Promise<boolean> {
+  try {
+    const cleanEmail = user.email.trim().toLowerCase();
+    const { error } = await supabase.from('profiles').upsert({
+      id: user.id || cleanEmail,
+      email: cleanEmail,
+      name: user.name,
+      full_name: user.name,
+      avatar_url: user.avatar || '',
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'email' });
+
+    if (error) {
+      console.warn('Could not save profile to Supabase profiles table:', error.message);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Error saving profile to Supabase:', err);
+    return false;
+  }
+}
+

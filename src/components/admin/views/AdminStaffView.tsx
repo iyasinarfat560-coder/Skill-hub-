@@ -12,6 +12,8 @@ export const AdminStaffView: React.FC<AdminStaffViewProps> = ({ staff, onAddStaf
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('password123');
+  const [pin, setPin] = useState('1234');
   const [role, setRole] = useState<'Super Admin' | 'Manager' | 'Support Staff' | 'Content Editor'>('Support Staff');
 
   const handleCreate = (e: React.FormEvent) => {
@@ -25,13 +27,17 @@ export const AdminStaffView: React.FC<AdminStaffViewProps> = ({ staff, onAddStaf
       phone: phone || '01700000000',
       role,
       status: 'Active',
-      permissions: [role === 'Manager' ? 'Full Access' : 'Limited Role Access'],
+      permissions: [role === 'Super Admin' ? 'All Permissions' : role === 'Manager' ? 'Full Access' : 'Limited Role Access'],
+      password: password || 'password123',
+      pin: pin || '1234',
     };
 
     onAddStaff(newStaff);
     setName('');
     setEmail('');
     setPhone('');
+    setPassword('password123');
+    setPin('1234');
   };
 
   return (
@@ -87,6 +93,31 @@ export const AdminStaffView: React.FC<AdminStaffViewProps> = ({ staff, onAddStaf
                 <option value="Support Staff">Support Staff (Orders & Chat)</option>
                 <option value="Content Editor">Content Editor (Products & Blog)</option>
               </select>
+            </div>
+
+            <div>
+              <label className="block text-slate-300 font-semibold mb-1">Login Password</label>
+              <input
+                type="text"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-slate-300 font-semibold mb-1">4-Digit Security PIN</label>
+              <input
+                type="text"
+                maxLength={4}
+                required
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                placeholder="1829"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none font-mono"
+              />
             </div>
 
             <button

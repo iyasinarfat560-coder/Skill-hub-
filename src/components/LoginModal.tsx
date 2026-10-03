@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, GraduationCap, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase, saveSupabaseProfile } from '../lib/supabase';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -47,6 +47,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
         const userName =
           data?.user?.user_metadata?.full_name || name || email.split('@')[0] || 'User';
 
+        await saveSupabaseProfile({
+          id: data?.user?.id || email,
+          name: userName,
+          email: email,
+        });
+
         onLoginSuccess({
           name: userName,
           email: email,
@@ -65,6 +71,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
         const userName =
           data?.user?.user_metadata?.full_name || name || email.split('@')[0] || 'User';
 
+        await saveSupabaseProfile({
+          id: data?.user?.id || email,
+          name: userName,
+          email: email,
+        });
+
         onLoginSuccess({
           name: userName,
           email: email,
@@ -75,8 +87,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
     } catch (err: any) {
       console.error('Auth error:', err);
       // Fallback so user is not blocked
+      const fallbackName = name || email.split('@')[0] || 'User';
+      await saveSupabaseProfile({
+        name: fallbackName,
+        email: email,
+      });
       onLoginSuccess({
-        name: name || email.split('@')[0] || 'User',
+        name: fallbackName,
         email: email,
       });
       onClose();

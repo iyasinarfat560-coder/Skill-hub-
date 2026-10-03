@@ -18,7 +18,8 @@ import {
   Sparkles,
   PackageCheck,
   HelpCircle,
-  BookOpen
+  BookOpen,
+  LogOut
 } from 'lucide-react';
 import { Order, Course, ViewMode } from '../types';
 
@@ -31,6 +32,7 @@ interface CustomerProfileViewProps {
   onOpenLogin: () => void;
   onSelectCourseForDetails?: (course: Course) => void;
   onUpdateUser?: (updated: { name: string; email: string; avatar?: string }) => void;
+  onLogout?: () => void;
 }
 
 export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
@@ -42,6 +44,7 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
   onOpenLogin,
   onSelectCourseForDetails,
   onUpdateUser,
+  onLogout,
 }) => {
   const [activeTab, setActiveTab] = useState<'orders' | 'profile'>('orders');
   const [searchQuery, setSearchQuery] = useState('');
@@ -451,13 +454,24 @@ export const CustomerProfileView: React.FC<CustomerProfileViewProps> = ({
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 space-y-3">
                 <button
                   type="submit"
                   className="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-md shadow-purple-200 cursor-pointer"
                 >
                   প্রোফাইল তথ্য সংরক্ষণ করুন
                 </button>
+
+                {onLogout && (
+                  <button
+                    type="button"
+                    onClick={onLogout}
+                    className="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold py-3 rounded-xl text-sm transition-all border border-rose-200 cursor-pointer flex items-center justify-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4 text-rose-600" />
+                    <span>লগআউট করুন</span>
+                  </button>
+                )}
               </div>
             </form>
           </div>

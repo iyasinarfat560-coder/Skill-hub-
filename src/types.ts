@@ -147,6 +147,9 @@ export interface StaffMember {
   role: 'Super Admin' | 'Manager' | 'Support Staff' | 'Content Editor';
   status: 'Active' | 'Inactive';
   permissions: string[];
+  password?: string;
+  pin?: string;
+  trustedDeviceId?: string;
 }
 
 export interface WhatsAppSettingsData {

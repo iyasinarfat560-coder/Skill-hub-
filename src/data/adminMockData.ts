@@ -46,12 +46,12 @@ export const INITIAL_BUNDLES: Bundle[] = [
 ];
 
 export const ADMIN_SEED_CREDENTIALS = {
-  email: 'Admin1829@gmail.com',
+  email: 'iyasinarfat560@gmail.com',
   phone: '01861612289',
   password: '12342580',
   pin: '1829',
   role: 'Super Admin',
-  name: 'Admin',
+  name: 'Yasin Arfat',
 };
 
 export const INITIAL_ORDERS: Order[] = [
@@ -341,12 +341,14 @@ export const INITIAL_ANNOUNCEMENTS: Announcement[] = [
 export const INITIAL_STAFF: StaffMember[] = [
   {
     id: 'STF-1',
-    name: 'Yasin Arfat (Admin)',
+    name: 'Yasin Arfat',
     email: 'iyasinarfat560@gmail.com',
     phone: '01861612289',
     role: 'Super Admin',
     status: 'Active',
     permissions: ['All Permissions', 'Manage Staff', 'Financial Access'],
+    password: '12342580',
+    pin: '1829',
   },
   {
     id: 'STF-2',
@@ -356,6 +358,8 @@ export const INITIAL_STAFF: StaffMember[] = [
     role: 'Support Staff',
     status: 'Active',
     permissions: ['Manage Orders', 'Manage Reviews', 'WhatsApp/Email'],
+    password: 'password123',
+    pin: '1234',
   },
   {
     id: 'STF-3',
@@ -365,6 +369,8 @@ export const INITIAL_STAFF: StaffMember[] = [
     role: 'Content Editor',
     status: 'Active',
     permissions: ['Manage Products', 'Manage Blog', 'Manage Categories'],
+    password: 'password123',
+    pin: '5678',
   },
 ];
 

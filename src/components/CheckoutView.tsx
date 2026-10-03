@@ -31,9 +31,9 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
   const whatsappChatLink = whatsappSettings?.whatsappChatLink || 'https://wa.me/8801861612289';
   // Step 1 Form State
   const [userDetails, setUserDetails] = useState<UserDetails>({
-    fullName: 'Rasel Ahmed',
-    whatsapp: '01861612289',
-    email: 'rasel@gmail.com',
+    fullName: '',
+    whatsapp: '',
+    email: '',
     country: 'Bangladesh',
     notes: '',
   });
@@ -332,9 +332,10 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                   <input
                     type="text"
                     required
+                    autoComplete="off"
                     value={userDetails.fullName}
                     onChange={(e) => setUserDetails({ ...userDetails, fullName: e.target.value })}
-                    placeholder="Rasel Ahmed"
+                    placeholder="আপনার নাম লিখুন"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-slate-900 font-medium focus:bg-white focus:outline-hidden focus:border-purple-600 transition-all"
                   />
                 </div>
@@ -347,9 +348,10 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                   <input
                     type="text"
                     required
+                    autoComplete="off"
                     value={userDetails.whatsapp}
                     onChange={(e) => setUserDetails({ ...userDetails, whatsapp: e.target.value })}
-                    placeholder="01909905849"
+                    placeholder="01XXXXXXXXX"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-slate-900 font-medium focus:bg-white focus:outline-hidden focus:border-purple-600 transition-all"
                   />
                 </div>
@@ -362,9 +364,10 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                   <input
                     type="email"
                     required
+                    autoComplete="off"
                     value={userDetails.email}
                     onChange={(e) => setUserDetails({ ...userDetails, email: e.target.value })}
-                    placeholder="rasel@gmail.com"
+                    placeholder="your-email@gmail.com"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-slate-900 font-medium focus:bg-white focus:outline-hidden focus:border-purple-600 transition-all"
                   />
                 </div>

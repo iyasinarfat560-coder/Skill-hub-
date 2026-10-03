@@ -94,7 +94,11 @@ export default function App() {
   }
 
   // Master State Databases (loaded from localStorage or fallback to defaults)
-  const [products, setProducts] = useState<Course[]>(() => getStoredData('products', POPULAR_COURSES));
+  const [products, setProducts] = useState<Course[]>(() => {
+    const stored = getStoredData('products', POPULAR_COURSES);
+    const deletedIds = getStoredData<string[]>('deleted_product_ids', []);
+    return stored.filter(p => !deletedIds.includes(String(p.id)));
+  });
   const [bundles, setBundles] = useState<Bundle[]>(() => getStoredData('bundles', INITIAL_BUNDLES));
   const [selectedBundle, setSelectedBundle] = useState<Bundle | null>(null);
   const [categories, setCategories] = useState<Category[]>(() => getStoredData('categories', CATEGORIES));
@@ -139,10 +143,11 @@ export default function App() {
         };
 
         if (dbData.products) {
-          const currentLocal = getStoredData('products', POPULAR_COURSES);
-          const merged = mergeById(currentLocal, dbData.products);
+          const currentLocal = getStoredData('products', products);
+          const deletedIds = getStoredData<string[]>('deleted_product_ids', []);
+          const merged = mergeById(currentLocal, dbData.products).filter(p => !deletedIds.includes(String(p.id)));
           POPULAR_COURSES.forEach(pc => {
-            if (!merged.some(p => p.id === pc.id)) merged.push(pc);
+            if (!merged.some(p => p.id === pc.id) && !deletedIds.includes(String(pc.id))) merged.push(pc);
           });
           setProducts(merged);
           storeData('products', merged);
@@ -465,12 +470,19 @@ export default function App() {
 
   const handleDeleteProduct = (prodId: string) => {
     setProducts((prev) => {
-      const updated = prev.filter((p) => p.id !== prodId);
+      const updated = prev.filter((p) => String(p.id) !== String(prodId));
       storeData('products', updated);
       saveSupabaseStateKey('products', updated);
+
+      const deletedIds = getStoredData<string[]>('deleted_product_ids', []);
+      if (!deletedIds.includes(String(prodId))) {
+        deletedIds.push(String(prodId));
+        storeData('deleted_product_ids', deletedIds);
+      }
+
       return updated;
     });
-    showToast('প্রোডাক্ট মুছে ফেলা হয়েছে');
+    showToast('প্রোডাক্ট সফলভাবে মুছে ফেলা হয়েছে');
   };
 
   const handleAddBundle = (newBundle: Bundle) => {
@@ -1083,6 +1095,11 @@ export default function App() {
             onUpdateUser={(updated) => {
               setUser(updated);
             }}
+            onLogout={() => {
+              setUser(null);
+              setCurrentView('home');
+              showToast('সফলভাবে লগআউট করা হয়েছে!');
+            }}
           />
         )}
 
@@ -1348,6 +1365,11 @@ export default function App() {
           }));
           setCurrentView('admin');
           showToast(`স্বাগতম, ${adminInfo.name} (${adminInfo.role})!`);
+        }}
+        onUpdateStaffMembers={(updated) => {
+          setStaffMembers(updated);
+          storeData('staffMembers', updated);
+          saveSupabaseStateKey('staffMembers', updated);
         }}
       />
 
