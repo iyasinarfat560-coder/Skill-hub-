@@ -21,6 +21,7 @@ import {
 } from './data/adminMockData';
 import {
   fetchSupabaseAppState,
+  fetchSupabaseProducts,
   saveSupabaseStateKey,
   saveSupabaseOrder,
   saveSupabaseSubscriber,
@@ -130,12 +131,14 @@ export default function App() {
     setToastMessage(msg);
   };
 
-  // Initial Sync from Supabase on mount with smart merging
+  // Initial Sync from Supabase on mount with Supabase as Single Source of Truth
   useEffect(() => {
     async function initSupabaseData() {
+      const remoteProducts = await fetchSupabaseProducts();
       const dbData = await fetchSupabaseAppState();
-      if (!dbData || Object.keys(dbData).length === 0) {
-        // Seed initial local snapshot to Supabase so courses, bundles, categories, blogs are stored
+
+      if ((!dbData || Object.keys(dbData).length === 0) && !remoteProducts) {
+        // Seed initial local snapshot to Supabase
         await saveFullSupabaseSnapshot({
           products,
           bundles,
@@ -160,21 +163,21 @@ export default function App() {
       const mergeById = <T extends { id: string }>(localArr: T[], remoteArr?: T[]): T[] => {
         if (!remoteArr) return localArr;
         const map = new Map<string, T>();
-        // Remote first, then local override so new local/admin additions take precedence
-        remoteArr.forEach(item => map.set(item.id, item));
+        // Supabase (Remote) takes absolute precedence over local storage
         localArr.forEach(item => map.set(item.id, item));
+        remoteArr.forEach(item => map.set(item.id, item));
         return Array.from(map.values());
       };
 
-      if (dbData.products) {
-        const currentLocal = getStoredData('products', products);
+      const authoritativeProducts = remoteProducts || dbData?.products;
+      if (authoritativeProducts) {
         const deletedIds = getStoredData<string[]>('deleted_product_ids', []);
-        const merged = mergeById(currentLocal, dbData.products).filter(p => !deletedIds.includes(String(p.id)));
+        const filtered = authoritativeProducts.filter(p => !deletedIds.includes(String(p.id)));
         POPULAR_COURSES.forEach(pc => {
-          if (!merged.some(p => p.id === pc.id) && !deletedIds.includes(String(pc.id))) merged.push(pc);
+          if (!filtered.some(p => p.id === pc.id) && !deletedIds.includes(String(pc.id))) filtered.push(pc);
         });
-        setProducts(merged);
-        storeData('products', merged);
+        setProducts(filtered);
+        storeData('products', filtered);
       }
       if (dbData.bundles) {
         const currentLocal = getStoredData('bundles', INITIAL_BUNDLES);
@@ -488,22 +491,24 @@ export default function App() {
     }
   };
 
-  const handleDeleteProduct = (prodId: string) => {
+  const handleDeleteProduct = async (prodId: string) => {
+    let currentUpdated: Course[] = [];
     setProducts((prev) => {
-      const updated = prev.filter((p) => String(p.id) !== String(prodId));
-      storeData('products', updated);
-      saveSupabaseStateKey('products', updated);
-      deleteSupabaseProduct(prodId);
-
-      const deletedIds = getStoredData<string[]>('deleted_product_ids', []);
-      if (!deletedIds.includes(String(prodId))) {
-        deletedIds.push(String(prodId));
-        storeData('deleted_product_ids', deletedIds);
-      }
-
-      return updated;
+      currentUpdated = prev.filter((p) => String(p.id) !== String(prodId));
+      storeData('products', currentUpdated);
+      return currentUpdated;
     });
-    showToast('প্রোডাক্ট সফলভাবে মুছে ফেলা হয়েছে');
+
+    await saveSupabaseStateKey('products', currentUpdated);
+    await deleteSupabaseProduct(prodId);
+
+    const deletedIds = getStoredData<string[]>('deleted_product_ids', []);
+    if (!deletedIds.includes(String(prodId))) {
+      deletedIds.push(String(prodId));
+      storeData('deleted_product_ids', deletedIds);
+    }
+
+    showToast('প্রোডাক্ট সফলভাবে Supabase থেকে ডিলিট করা হয়েছে');
   };
 
   const handleAddBundle = (newBundle: Bundle) => {

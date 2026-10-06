@@ -208,6 +208,32 @@ export async function deleteSupabaseProduct(productId: string): Promise<void> {
 }
 
 /**
+ * Fetch products directly from Supabase products table
+ */
+export async function fetchSupabaseProducts(): Promise<Course[] | null> {
+  try {
+    const { data, error } = await supabase.from('products').select('*');
+    if (error || !data || data.length === 0) {
+      return null;
+    }
+    return data.map((row: any) => row.raw_data || {
+      id: row.id,
+      title: row.title,
+      category: row.category,
+      originalPrice: row.original_price,
+      discountPrice: row.discount_price,
+      studentsCount: row.students_count,
+      thumbnailUrl: row.thumbnail_url,
+      productType: row.product_type,
+      description: row.description,
+    });
+  } catch (err) {
+    console.error('Error fetching Supabase products table:', err);
+    return null;
+  }
+}
+
+/**
  * Test Supabase connection and state table readiness
  */
 export async function testSupabaseSync(): Promise<{ success: boolean; message: string }> {
